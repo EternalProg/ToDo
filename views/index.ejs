@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" type="text/css" />
+    <title>Todo</title>
+  </head>
+  <body>
+    <h1>Todo App</h1>
+
+    <form method="post" action="/add">
+      <input
+        type="text"
+        name="todo_title"
+        placeholder="Enter your todo"
+        class="input"
+      />
+      <button type="submit" class="btn">Add</button>
+    </form>
+
+    <div>
+      <ul>
+        <% todos.forEach(todo => { %> <% if(todo.done == false) {%>
+        <li class="todo-list">
+          <form class="todo-item" method="post" action="/done/<%= todo.id %>">
+            <span contenteditable="true" id="todo-<%= todo.id %>"
+              ><%= todo.todo_title %></span
+            >
+            <button type="submit" class="done-btn">Done</button>
+          </form>
+          <form method="get" action="/delete/<%= todo.id %>">
+            <button type="submit" class="delete-btn">X</button>
+          </form>
+        </li>
+        <% }%> <% }) %>
+      </ul>
+    </div>
+
+    <div>
+      <h2>Done</h2>
+      <ul>
+        <% todos.forEach(todo => { %> <% if(todo.done == true) {%>
+        <li class="todo-list">
+          <form
+            class="todo-done-item"
+            method="post"
+            action="/cancel/<%= todo.id %>"
+          >
+            <span contenteditable="true" id="todo-<%= todo.id %>"
+              ><%= todo.todo_title %></span
+            >
+            <button type="submit" class="cancel-done-btn">Cancel</button>
+          </form>
+          <form method="get" action="/delete/<%= todo.id %>">
+            <button type="submit" class="delete-btn">X</button>
+          </form>
+        </li>
+        <% }%> <% }) %>
+      </ul>
+    </div>
+
+    <script>
+      document
+        .querySelectorAll("[contenteditable]")
+        .forEach(function (element) {
+          element.addEventListener("blur", function (e) {
+            e.preventDefault();
+            var id = this.id.split("-")[1];
+            var newTodoTitle = this.textContent;
+            fetch("/edit/" + id, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ newTodoTitle: this.textContent }),
+            })
+              .then((response) => response.json())
+              .then((data) => console.log("Success:", data))
+              .catch((error) => console.error("Error:", error));
+          });
+        });
+    </script>
+  </body>
+</html>
